@@ -9,8 +9,8 @@ License
 =======
 
 This software use source code of following projects:
- - [Mongoose](cesanta.com/mongoose.shtml) : Embeded web server for C/C++
- - [Protothreads](dunkels.com/adam/pt/index.html) : Extremely lightweight stackless threads designed for severely memory constrained systems.
+ - [Mongoose](http://cesanta.com/mongoose.shtml) : Embeded web server for C/C++
+ - [Protothreads](http://dunkels.com/adam/pt/index.html) : Extremely lightweight stackless threads designed for severely memory constrained systems.
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
