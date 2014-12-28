@@ -2,15 +2,15 @@
 Generic Ideas
 =============
 
-MicroWeb project is intended to create web servers that run on as small as possible programs. The main micro-web server will receive requests from client, pass them through IPC to other servers. All server will be written in C (not C++) and follow some communication rules that allow the web application to be started like this:
+MicroWeb project is intended to create web servers that run on as small as possible programs. The main micro-web server will receive requests from client, pass them through IPC to other servers. All servers will be written in C (not C++) and follow some communication rules that allow the web application to be started like this:
 > image-server -u "/image" | js-server -u "/js" | bussiness-server | micro-server -p 8080
 
 License
 =======
 
 This software use source code of following projects:
- - Mongoose (cesanta.com/mongoose.shtml) : Embeded web server for C/C++
- - Protothreads (dunkels.com/adam/pt/index.html) : Extremely lightweight stackless threads designed for severely memory constrained systems.
+ - [Mongoose](cesanta.com/mongoose.shtml) : Embeded web server for C/C++
+ - [Protothreads](dunkels.com/adam/pt/index.html) : Extremely lightweight stackless threads designed for severely memory constrained systems.
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
