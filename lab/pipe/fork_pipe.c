@@ -1,6 +1,8 @@
 /*
   this file show how to create a pipe and pass it
-  to a child process
+  to a child process.
+  the pipes only work uni-directional.
+  TODO: pass the pipe to another program.
  */
 #include <stdlib.h>
 #include <stdio.h>
