@@ -1,3 +1,7 @@
+/*
+  this file show how to create a pipe and pass it
+  to a child process
+ */
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
