@@ -1,11 +1,13 @@
 /*
  * This is a proof of concept using fibers to solve
  * a complex problem.
- * chosen problem is ConvexHull.
- * first thread will read a number of points from text files.
- * then it will start a thread that calculate max/min 4 points.
- * thread 1 & 2 will run parallel.
- * when they 're finished, 4 other threads will be started in order to calculate the hull.
+ * I choose ConvexHull problem to demonstrade fiber technique.
+ * The first thread will read a number of points from text files.
+ * With each point read, it will start a thread with the point as parameter.
+ * The calculation thread will calculate with all read points and then hold to wait
+ * for more points to be read.
+ * With each point A, if there is another point B that all other points when rotating
+ * with A as root counter clockwise from B, then A (and also B) belong to the convexhull
  */
 
 #include <stdio.h>
@@ -26,12 +28,17 @@ void point2Vector(int2d a, int2d b, int2d* v) {
   v->y = b.y - a.y;
 }
 
-// check if with root point, rotating from point A to point B is clockwise(0) or counter-clockwise(1) 
+// check if with root point, rotating from point A to point B is clockwise(0) or counter-clockwise(1)
 int checkRotateDirection(int2d root, int2d a, int2d b) {
   int2d v1, v2;
   point2Vector(root, a, &v1);
   point2Vector(root, b, &v2);
-  return (crossProduct(v1, v2) > 0);
+  int cx = crossProduct(v1, v2);
+  if (cx == 0)
+    return 0;
+  if (cx > 0)
+    return 1;
+  return -1;
 }
 
 // these will be part of fiber library
@@ -116,7 +123,7 @@ Fiber* startFiber(FiberController* controller, int (*fiberFunc)(Fiber*), int dat
 void loopFiber(FiberController* controller) {
   if (controller->fiberNum <= 0)
     return;
-  int hasRunning;
+  int hasRunning, i;
   do {
     hasRunning = 0;
     if (controller->emergeFlg)
@@ -131,6 +138,7 @@ void loopFiber(FiberController* controller) {
 }
 
 // shared fiber data
+FiberController* fiberctrl;
 // Array of points
 int2d points[100];
 int numPoints;
@@ -141,51 +149,116 @@ int topP, leftP, bottomP, rightP;
 // flags for finished calculation threads
 int topFin, leftFin, bottomFin, rightFin;
 
-// 1st Thread: Read points from files
-// Start 2nd, 3rd, 4th, 5th, 6th thread
-// trigger finished read signal
-typedef struct readFileFiberData_t {
+// 2nd Thread: calculate rotation with 1 specific point as root
+// Wait for new point(s) to be read from 1st Thread
+// trigger max/min finished signal
+typedef struct calculationFiberData_t {
   Fiber fiber;
-  FILE* file;
-} readFileFiberData;
+  int calculatePt;
+  int currentPt, maxPt, minPt;
+} calculationFiberData;
 
-int readFileFiber(readFileFiberData *data) {
-  switch (data->fiber.cPoint) {
+int calculationFiber(Fiber* fbdata) {
+  calculationFiberData *data = (calculationFiberData*) fbdata;
+  switch(data->fiber.cPoint) {
   case 0:
-    // variable init
-    data->file = fopen("fiber_proto/input.txt", "r");
-    numPoints = 0;
-    readPoints = 0;
+    data->currentPt = 0;
+    data->maxPt = -1;
+    data->minPt = -1;
     return data->fiber.cPoint = 1;
   case 1:
-    // TODO: start other threads
+    while (data->currentPt < numPoints) {
     return data->fiber.cPoint = 2;
   case 2:
-    // TODO: read files
+      if (data->currentPt < readPoints) {
+        if (data->calculatePt != data->currentPt) {
+          if (-1 == data->maxPt) {
+            data->maxPt = data->currentPt;
+          } else {
+            if (checkRotateDirection(points[data->calculatePt], points[data->maxPt], points[data->currentPt]) > 0) {
+              data->maxPt = data->currentPt;
+            }
+          }
+          if (-1 == data->minPt) {
+            data->minPt = data->currentPt;
+          } else {
+            if (checkRotateDirection(points[data->calculatePt], points[data->minPt], points[data->currentPt]) < 0) {
+              data->minPt = data->currentPt;
+            }
+          }
+        }
+        data->currentPt++;
+      }
+    }
     return data->fiber.cPoint = 3;
+  case 3:
+    if (data->minPt == data->maxPt) {
+      printf("point : %d inside.\n", data->calculatePt);
+    } else {
+      int mmrot = checkRotateDirection(points[data->calculatePt], points[data->minPt], points[data->maxPt]);
+      if (0 == mmrot) {
+        printf("point : %d on edge.\n", data->calculatePt);
+      } else if (0 > mmrot) {
+        printf("point : %d not on convex.\n", data->calculatePt);
+      } else {
+        printf("point : %d, min : %d, max : %d\n", data->calculatePt, data->minPt, data->maxPt);
+      }
+    }
+    return data->fiber.cPoint = 4;
   case -1:
   default:
     return data->fiber.cPoint = -1;
   }
 }
 
-// 2nd Thread: calculate max, min 4 points
-// Wait for new point(s) to be read from 1st Thread
-// trigger max/min finished signal
+// 1st Thread: Read points from files
+// Start 2nd, 3rd, 4th, 5th, 6th thread
+// trigger finished read signal
+typedef struct readFileFiberData_t {
+  Fiber fiber;
+  FILE* file;
+  char* filename;
+} readFileFiberData;
 
-// 3rd Thread: calculate from top (max y)
-// Wait for max/min finished signal
-
-// 4th Thread: calculate from bottom (min y)
-// Wait for max/min finished signal
-
-// 5th Thread: calculate from left (min x)
-// Wait for max/min finished signal
-
-// 6th Thread: calculate from right (max x)
-// Wait for max/min finished signal
+int readFileFiber(Fiber *fbdata) {
+  readFileFiberData *data = (readFileFiberData*) fbdata;
+  switch (data->fiber.cPoint) {
+  case 0:
+    // variable init
+    data->file = fopen(data->filename, "r");
+    numPoints = 0;
+    readPoints = 0;
+    if (NULL == data->file)
+      return data->fiber.cPoint = 0;
+    return data->fiber.cPoint = 1;
+  case 1:
+    fscanf(data->file, "%d", &numPoints);
+    printf("num points : %d\n", numPoints);
+    return data->fiber.cPoint = 2;
+  case 2:
+    for (readPoints = 0; readPoints<numPoints; readPoints++) {
+    return data->fiber.cPoint = 3;
+  case 3:
+      // read files
+      fscanf(data->file, "%d %d", &(points[readPoints].x), &(points[readPoints].y) );
+      printf("read %d %d\n", points[readPoints].x, points[readPoints].y);
+      // Start thread
+      calculationFiberData* fbc = (calculationFiberData*)startFiber(fiberctrl, &calculationFiber, sizeof(calculationFiberData));
+      fbc->calculatePt = readPoints;
+    }
+    return data->fiber.cPoint = 4;
+  case -1:
+  default:
+    return data->fiber.cPoint = -1;
+  }
+}
 
 // main Thread loop
-int main(void) {
+int main(int argc, char* argv[]) {
+  fiberctrl = initFiberController(101);
+  readFileFiberData* fb1 = (readFileFiberData*) startFiber(fiberctrl, &readFileFiber, sizeof(readFileFiberData));
+  fb1->filename = argv[1];
+  loopFiber(fiberctrl);
+  finalizeFiberController(fiberctrl);
   return 0;
 }
