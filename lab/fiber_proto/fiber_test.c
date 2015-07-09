@@ -174,16 +174,20 @@ int calculationFiber(Fiber* fbdata) {
         if (data->calculatePt != data->currentPt) {
           if (-1 == data->maxPt) {
             data->maxPt = data->currentPt;
+            printf("set max pt %d for pt <%d>\n", data->maxPt, data->calculatePt);
           } else {
             if (checkRotateDirection(points[data->calculatePt], points[data->maxPt], points[data->currentPt]) > 0) {
               data->maxPt = data->currentPt;
+              printf("change max pt %d for pt <%d>\n", data->maxPt, data->calculatePt);
             }
           }
           if (-1 == data->minPt) {
             data->minPt = data->currentPt;
+            printf("set min pt %d for pt <%d>\n", data->minPt, data->calculatePt);
           } else {
             if (checkRotateDirection(points[data->calculatePt], points[data->minPt], points[data->currentPt]) < 0) {
               data->minPt = data->currentPt;
+              printf("change min pt %d for pt <%d>\n", data->minPt, data->calculatePt);
             }
           }
         }
@@ -193,15 +197,15 @@ int calculationFiber(Fiber* fbdata) {
     return data->fiber.cPoint = 3;
   case 3:
     if (data->minPt == data->maxPt) {
-      printf("point : %d inside.\n", data->calculatePt);
+      printf("point : <%d> inside.\n", data->calculatePt);
     } else {
       int mmrot = checkRotateDirection(points[data->calculatePt], points[data->minPt], points[data->maxPt]);
       if (0 == mmrot) {
-        printf("point : %d on edge.\n", data->calculatePt);
+        printf("point : <%d> on edge.\n", data->calculatePt);
       } else if (0 > mmrot) {
-        printf("point : %d not on convex.\n", data->calculatePt);
+        printf("point : <%d> not convex.\n", data->calculatePt);
       } else {
-        printf("point : %d, min : %d, max : %d\n", data->calculatePt, data->minPt, data->maxPt);
+        printf("point : <%d>, min : %d, max : %d\n", data->calculatePt, data->minPt, data->maxPt);
       }
     }
     return data->fiber.cPoint = 4;
