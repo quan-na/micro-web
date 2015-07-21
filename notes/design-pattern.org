@@ -1,0 +1,6 @@
+* OOP patterns
+** Functional interface
+** State-carrying function
+** Command
+** Builder
+* Functional programming patterns
