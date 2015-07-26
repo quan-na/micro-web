@@ -1,6 +1,14 @@
 * OOP patterns
-** Functional interface
-** State-carrying function
-** Command
-** Builder
-* Functional programming patterns
+** Functional interface: passing actions around.
+** State-carrying function: function that carry bits of information.
+** Command: central processing unit that receive commands.
+** Builder: build massive object step-by-step
+** Iterator: loop through a collection
+** Template: provide basic process structure and let actions plugged into it.
+** Strategy: define algorithm in abstract term and let other use it their way.
+** Null Object: define a default object behavior instead of checking null references.
+** Decorator: extending behavior of object intead of class.
+** Visitor: add behavior to data type without modifying it.
+** Dependency injection: inject object's dependency instead of letting it instantiate itself.
+* Functional
+** Tail recursion: repeat computation without mutable state & overflowing the stack.
