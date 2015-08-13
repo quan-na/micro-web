@@ -1,3 +1,4 @@
+#+STARTUP: hidestars
 * OOP patterns
 ** Functional interface: passing actions around.
 ** State-carrying function: function that carry bits of information.
@@ -12,3 +13,4 @@
 ** Dependency injection: inject object's dependency instead of letting it instantiate itself.
 * Functional
 ** Tail recursion: repeat computation without mutable state & overflowing the stack.
+** Mutual recursion: various functions calling each other recursively.
