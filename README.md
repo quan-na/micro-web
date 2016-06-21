@@ -1,3 +1,4 @@
+> **Project status**: *initialized* - It is not ready to be seen.
 
 Generic Ideas
 =============
